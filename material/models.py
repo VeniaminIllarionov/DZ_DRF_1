@@ -15,11 +15,11 @@ class Course(models.Model):
 
 
 class Lesson(models.Model):
-    course = models.ForeignKey(Course, on_delete=models.CASCADE, verbose_name='курс')
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, verbose_name='курс',blank=True, null=True)
     title = models.CharField(max_length=150, verbose_name='название урока')
     description = models.TextField(verbose_name='описание')
     preview = models.ImageField(upload_to='material/lesson', blank=True, null=True, verbose_name='Картинка')
-    url_video = models.URLField(verbose_name='Ссылка на видео')
+    url_video = models.URLField(verbose_name='Ссылка на видео', blank=True, null=True)
 
     def __str__(self):
         return self.title
