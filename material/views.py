@@ -1,4 +1,4 @@
-from rest_framework import viewsets, generics
+from rest_framework import viewsets, generics, status
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 
@@ -67,20 +67,24 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
     queryset = Subscription.objects.all()
     permission_classes = [IsAuthenticated]
 
+
+    def get(self, request):
+        user = request.user
+        subscriptions = Subscription.objects.filter(user=user)
+        serializer = SubscriptionSerializer(subscriptions, many=True)
+        return Response(serializer.data)
     def post(self, *args, **kwargs):
         user = self.request.user
-        course_id = self.request.data('course')
+        course_id = self.request.data('course_id')
         course_item = generics.get_object_or_404(Course, pk=course_id)
 
-        subs_item = Subscription.objects.filter(user=user, course=course_item)
-
-        # Если подписка у пользователя на этот курс есть - удаляем ее
-        if subs_item.exists():
-            Subscription.delete()
-            message = 'подписка удалена'
-        # Если подписки у пользователя на этот курс нет - создаем ее
+        subscription, created = Subscription.objects.get_or_create(user=user, course=course_item)
+        if not created:
+            subscription.delete()
+            message = 'Подписка Удалена'
         else:
-            Subscription.create(user=user, course=course_item)
-            message = 'подписка добавлена'
-        # Возвращаем ответ в API
-        return Response({"message": message})
+            message = 'Подписка добавлена'
+
+        return Response({"message": message}, status=status.HTTP_201_CREATED)
+
+
