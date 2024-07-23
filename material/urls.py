@@ -1,12 +1,14 @@
 from material.apps import CoursesConfig
 from rest_framework.routers import DefaultRouter
 from django.urls import path
-from material.views import CourseViewSet, LessonList, LessonCreate, LessonRetrieve, LessonUpdate, LessonDelete
+from material.views import CourseViewSet, LessonList, LessonCreate, LessonRetrieve, LessonUpdate, LessonDelete, \
+    SubscriptionViewSet
 
 app_name = CoursesConfig.name
 
 router = DefaultRouter()
 router.register(r'course', CourseViewSet, basename='material')
+router.register(r'subscription', SubscriptionViewSet, basename='subscription')
 
 urlpatterns = [
     path('lesson/', LessonList.as_view(),name='lesson_list'),
