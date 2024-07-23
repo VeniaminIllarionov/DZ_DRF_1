@@ -67,23 +67,23 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
     queryset = Subscription.objects.all()
     permission_classes = [IsAuthenticated]
 
+    def post(self, request):
+        user = request.user
+        course_id = request.data.get('course_id')
+        course = generics.get_object_or_404(Course, id=course_id)
+
+        subscription, created = Subscription.objects.get_or_create(user=user, course=course)
+        print(subscription)
+        if not created:
+            subscription.delete()
+            message = 'Subscription removed'
+        else:
+            message = 'Subscription added'
+
+        return Response({"message": message}, status=status.HTTP_201_CREATED)
+
     def get(self, request):
         user = request.user
         subscriptions = Subscription.objects.filter(user=user)
         serializer = SubscriptionSerializer(subscriptions, many=True)
         return Response(serializer.data)
-
-    def post(self, *args, **kwargs):
-        user = self.request.user
-        course_id = self.request.data('course_id')
-        course_item = generics.get_object_or_404(Course, pk=course_id)
-
-        subs_item = Subscription.objects.filter(user=user, course=course_item)
-
-        if subs_item.exists():
-            subs_item.delete()
-            message = "подписка удалена"
-        else:
-            Subscription.objects.create(user=user, course=course_item)
-            message = "подписка добавлена"
-        return Response({"message": message})
