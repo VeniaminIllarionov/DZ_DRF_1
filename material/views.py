@@ -82,8 +82,8 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
 
         if subs_item.exists():
             subs_item.delete()
-            Subscription.message = "подписка удалена"
+            message = "подписка удалена"
         else:
             Subscription.objects.create(user=user, course=course_item)
-            Subscription.message = "подписка добавлена"
+            message = "подписка добавлена"
         return Response({"message": message})

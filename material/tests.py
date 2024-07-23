@@ -116,29 +116,36 @@ class TestSubscription(APITestCase):
         self.user = User.objects.create(email="test77@example.com")
         self.client.force_authenticate(user=self.user)
         self.course = Course.objects.create(title="Python", description="Основы Python")
-        self.url = reverse("material:subscription")
 
     def test_subscription_activate(self):
         """Тестирование активации подписки"""
         url = reverse('material:subscription-list')
         data = {"user": self.user.pk, "course": self.course.pk}
-        response = self.client.post(self.url, data=data)
+        response = self.client.post(url, data=data)
         temp_data = response.json()
         print(temp_data)
 
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(temp_data.get("message"), "подписка добавлена")
+        self.assertEqual(Subscription.objects.all().count(), 1)
 
 
 
 
     def test_subscribe_delete(self):
         Subscription.objects.create(user=self.user, course=self.course)
-        url = reverse('material:subscription-detail', args=(self.subscription.pk,))
+        subscription = Subscription.objects.first()
+        url = reverse('material:subscription-detail', args=(subscription.pk,))
         data = {
             "user": self.user.id,
             "course": self.course.id,
         }
-        response = self.client.post(self.url, data=data)
+        response = self.client.post(url, data=data)
         temp_data = response.json()
         print(temp_data)
+
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(temp_data.get("message"), "подписка удалена")
+        self.assertEqual(Subscription.objects.all().count(), 0)
 
 
