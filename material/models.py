@@ -44,7 +44,6 @@ class Subscription(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name="Пользователь")
     course = models.ForeignKey("material.Course", on_delete=models.CASCADE, related_name="Курс", )
     created_at = models.DateTimeField(auto_now_add=True)
-    message = models.CharField(max_length=100, verbose_name='Сообщение', blank=True, null=True)
 
     def get_user_email(self):
         return self.user.email

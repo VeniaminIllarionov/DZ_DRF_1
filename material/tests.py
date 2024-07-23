@@ -109,43 +109,53 @@ class TestLessons(APITestCase):
         print(data)
 
 
-class TestSubscription(APITestCase):
-    """ Тестирование подписки """
-
-    def setUp(self) -> None:
-        self.user = User.objects.create(email="test77@example.com")
+class SubscriptionTestCase(APITestCase):
+    def setUp(self):
+        self.user = User.objects.create(email='test777@localhost')
+        self.course = Course.objects.create(title='Програмное обеспечение')
         self.client.force_authenticate(user=self.user)
-        self.course = Course.objects.create(title="Python", description="Основы Python")
+        self.url = reverse('material:subscription_create')
 
     def test_subscription_activate(self):
-        """Тестирование активации подписки"""
-        url = reverse('material:subscription-list')
-        data = {"user": self.user.pk, "course": self.course.pk}
-        response = self.client.post(url, data=data)
-        temp_data = response.json()
-        print(temp_data)
-
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(temp_data.get("message"), "подписка добавлена")
-        self.assertEqual(Subscription.objects.all().count(), 1)
-
-
-
-
-    def test_subscribe_delete(self):
-        Subscription.objects.create(user=self.user, course=self.course)
-        subscription = Subscription.objects.first()
-        url = reverse('material:subscription-detail', args=(subscription.pk,))
+        """Тест подписки на курс"""
         data = {
             "user": self.user.id,
             "course": self.course.id,
         }
-        response = self.client.post(url, data=data)
-        temp_data = response.json()
-        print(temp_data)
+        response = self.client.post(self.url, data=data)
+        data_res = response.json()
+        print(data_res)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.json(),
+            {
+                "message": "Подписка добавлена",
+            },
+        )
+        self.assertTrue(
+            Subscription.objects.all().exists(),
+        )
 
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertEqual(temp_data.get("message"), "подписка удалена")
-        self.assertEqual(Subscription.objects.all().count(), 0)
-
-
+    def test_sub_deactivate(self):
+        """Тест отписки с курса"""
+        Subscription.objects.create(user=self.user, course=self.course)
+        data = {
+            "user": self.user.id,
+            "course": self.course.id,
+        }
+        response = self.client.post(self.url, data=data)
+        data_res = response.json()
+        print(data_res)
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_200_OK,
+        )
+        self.assertEqual(
+            response.json(),
+            {
+                "message": "Подписка удалена",
+            },
+        )
+        self.assertFalse(
+            Subscription.objects.all().exists(),
+        )
