@@ -1,5 +1,5 @@
-from rest_framework import viewsets, generics, status
-from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from rest_framework import viewsets, generics
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -10,6 +10,7 @@ from material.serializers import CourseSerializer, LessonSerializer, Subscriptio
 
 
 class CourseViewSet(viewsets.ModelViewSet):
+    """ViewSet for Course"""
     serializer_class = CourseSerializer
     queryset = Course.objects.all()
     pagination_class = MaterialPagination
@@ -25,6 +26,7 @@ class CourseViewSet(viewsets.ModelViewSet):
 
 
 class LessonCreate(generics.CreateAPIView):
+    """Lesson create endpoint"""
     serializer_class = LessonSerializer
     permission_classes = [IsAuthenticated, ~IsModerator, ]
 
@@ -35,6 +37,7 @@ class LessonCreate(generics.CreateAPIView):
 
 
 class LessonList(generics.ListAPIView):
+    """Lesson list endpoint"""
     queryset = Lesson.objects.all()
     pagination_class = MaterialPagination
     serializer_class = LessonSerializer
@@ -42,12 +45,14 @@ class LessonList(generics.ListAPIView):
 
 
 class LessonRetrieve(generics.RetrieveAPIView):
+    """Lesson one output endpoint"""
     queryset = Lesson.objects.all()
     serializer_class = LessonSerializer
     permission_classes = [IsModerator | IsOwner, ]
 
 
 class LessonUpdate(generics.UpdateAPIView):
+    """Lesson update endpoint"""
     queryset = Lesson.objects.all()
     serializer_class = LessonSerializer
     permission_classes = [IsModerator | IsOwner, ]
@@ -59,11 +64,13 @@ class LessonUpdate(generics.UpdateAPIView):
 
 
 class LessonDelete(generics.DestroyAPIView):
+    """Lesson delete endpoint"""
     queryset = Lesson.objects.all()
     permission_classes = [IsOwner, ~IsModerator]
 
 
 class SubscriptionCreateAPIView(APIView):
+    """Subscription create or delete endpoint"""
     serializer_class = SubscriptionSerializer
     queryset = Subscription.objects.all()
     permission_classes = [IsAuthenticated]

@@ -8,6 +8,6 @@ class Command(BaseCommand):
         user = User.objects.create(email='test3@example.com')
         user.is_staff = True
         user.is_active = True
-        user.is_superuser = False
+        user.is_superuser = True
         user.set_password('0205')
         user.save()

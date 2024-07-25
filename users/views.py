@@ -3,8 +3,10 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 
+from material.models import Course
 from users.models import User, Payments
 from users.serializers import UserSerializer, PaymentsSerializer
+from users.services import create_stripe_product, create_price, create_session
 
 
 class UserList(generics.ListAPIView):
@@ -34,3 +36,19 @@ class PaymentsList(generics.ListAPIView):
     filter_backends = [DjangoFilterBackend, OrderingFilter]
     filterset_fields = ['course', 'lesson', 'payment_method']
     ordering_fields = ['date_payment']
+
+
+class PaymentsCreate(generics.CreateAPIView):
+    permission_classes = [IsAuthenticated]
+    queryset = Payments.objects.all()
+    serializer_class = PaymentsSerializer
+
+    def perform_create(self, serializer):
+        payment = serializer.save(user=self.request.user)
+        new_price = create_price(payment.payment_amount)
+        session_id, link_payment = create_session(new_price)
+        payment.session_id = session_id
+        payment.link_payment = link_payment
+        payment.save()
+
+
