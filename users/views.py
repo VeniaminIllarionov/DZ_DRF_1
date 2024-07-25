@@ -1,12 +1,10 @@
 from rest_framework.filters import OrderingFilter
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics
-from rest_framework.permissions import IsAdminUser, IsAuthenticated
-
-from material.models import Course
+from rest_framework.permissions import IsAuthenticated
 from users.models import User, Payments
 from users.serializers import UserSerializer, PaymentsSerializer
-from users.services import create_stripe_product, create_price, create_session
+from users.services import create_price, create_session
 
 
 class UserList(generics.ListAPIView):
