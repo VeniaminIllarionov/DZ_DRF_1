@@ -7,6 +7,7 @@ from material.models import Course, Lesson, Subscription
 from material.paginators import MaterialPagination
 from material.permissions import IsModerator, IsOwner
 from material.serializers import CourseSerializer, LessonSerializer, SubscriptionSerializer
+from material.tasks import send_email_task
 
 
 class CourseViewSet(viewsets.ModelViewSet):
@@ -23,6 +24,20 @@ class CourseViewSet(viewsets.ModelViewSet):
         elif self.action == 'destroy':
             self.permission_classes = (IsOwner | ~IsModerator,)
         return super().get_permissions()
+
+    def perform_create(self, serializer):
+        new_course = serializer.save()
+        new_course.owner = self.request.user
+        new_course.save()
+
+    def perform_update(self, serializer):
+        instance = serializer.save()
+        course_id = instance.id
+        send_email_task(course_id)
+        return instance
+
+
+
 
 
 class LessonCreate(generics.CreateAPIView):
@@ -63,6 +78,7 @@ class LessonUpdate(generics.UpdateAPIView):
         update_lesson.save()
 
 
+
 class LessonDelete(generics.DestroyAPIView):
     """Lesson delete endpoint"""
     queryset = Lesson.objects.all()
@@ -84,7 +100,9 @@ class SubscriptionCreateAPIView(APIView):
         if subs_item.exists():
             subs_item.delete()
             message = 'Подписка удалена'
+            send_email_task(course_id)
         else:
             Subscription.objects.create(user=user, course=course)
             message = 'Подписка добавлена'
+            send_email_task(course_id)
         return Response({"message": message})
